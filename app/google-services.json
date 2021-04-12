@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "592860234773",
+    "project_id": "feedy-7b83f",
+    "storage_bucket": "feedy-7b83f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:592860234773:android:9dbb1e997eec75e7a33a1c",
+        "android_client_info": {
+          "package_name": "com.example.feedy"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "592860234773-s0v27ummp7q496o76paib8p0gdkau06p.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC47-5lXjuH-dJXoU1J5LIkhqiGF4_ZgxY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "592860234773-s0v27ummp7q496o76paib8p0gdkau06p.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

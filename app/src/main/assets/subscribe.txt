@@ -1,0 +1,19 @@
+	<header class="default-header">
+				<div class="container">
+					<div class="header-wrap">
+						<div class="header-top d-flex justify-content-between align-items-center">
+							<div class="logo">
+								<a href="#home"><img src="http://lema.com.ly/compuer1/image-1499077929075-V.jpg" height="40px"  width="124px" alt=""></a>
+							</div>
+						  <div class="main-menubar d-flex align-items-center">
+								<nav class="hide">
+									<a href="http://lema.com.ly/compuer1/index lema.php">Home</a>
+									<a href="#service">Services</a>
+									
+								</nav>
+								<div class="menu-bar"><span class="lnr lnr-menu"></span></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</header>
