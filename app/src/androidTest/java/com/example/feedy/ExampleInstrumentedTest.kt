@@ -1,4 +1,4 @@
-package com.example.feedy
+package com.example.feedy1
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

@@ -1,4 +1,4 @@
-package com.example.feedy
+package com.example.feedy1
 
 import org.junit.Test
 

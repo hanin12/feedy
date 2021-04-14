@@ -1,4 +1,4 @@
-package com.example.feedy
+package com.example.feedy1
 
 import android.animation.ValueAnimator
 import android.content.Intent
@@ -24,7 +24,10 @@ class SplashScreenActivity : AppCompatActivity() {
         //hiding title bar of this activity
         window.requestFeature(Window.FEATURE_NO_TITLE)
         //making this activity full screen
-        window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN)
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_FULLSCREEN,
+            WindowManager.LayoutParams.FLAG_FULLSCREEN
+        )
         setContentView(R.layout.activity_splash_screen)
         startLoaderAnimate()
         //4second splash time
@@ -35,10 +38,9 @@ class SplashScreenActivity : AppCompatActivity() {
 
             finish()
             endLoaderAnimate()
-        },4000)
+        }, 4000)
 
     }
-
 
 
     private fun endLoaderAnimate() {

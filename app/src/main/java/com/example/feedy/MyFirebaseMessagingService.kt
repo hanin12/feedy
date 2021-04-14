@@ -1,106 +1,111 @@
-package com.example.feedy
+package com.example.feedy1
 
-import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
-import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.media.RingtoneManager
-import android.net.Uri
 import android.os.Build
-import android.provider.Settings
-import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import java.net.HttpURLConnection
+import java.net.URL
+import java.util.*
 
 class MyFirebaseMessagingService : FirebaseMessagingService() {
-
-
-    private val TAG = "FireBaseMessagingService"
-    var NOTIFICATION_CHANNEL_ID = "net.larntech.notification"
-    val NOTIFICATION_ID = 100
-
+    private var notificationManager: NotificationManager? = null
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
-        super.onMessageReceived(remoteMessage)
+        val notificationIntent = Intent(this, WebViewActivity::class.java)
+        notificationIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+        val pendingIntent = PendingIntent.getActivity(
+            this,
+            0 /* Request code */, notificationIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
 
-        Log.e("message","Message Received ...");
-
-        if (remoteMessage.data.size > 0) {
-            val title = remoteMessage.data["title"]
-            val body = remoteMessage.data["body"]
-            showNotification(applicationContext, title, body)
-        } else {
-            val title = remoteMessage.notification!!.title
-            val body = remoteMessage.notification!!.body
-            showNotification(applicationContext, title, body)
-        }
-    }
-
-
-    override fun onNewToken(p0: String) {
-        super.onNewToken(p0.toString())
-        Log.e("token","New Token")
-    }
-
-
-    fun showNotification(
-            context: Context,
-            title: String?,
-            message: String?
-    ) {
-        val ii: Intent
-        ii = Intent(context, MainActivity::class.java)
-        ii.data = Uri.parse("custom://" + System.currentTimeMillis())
-        ii.action = "actionstring" + System.currentTimeMillis()
-        ii.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
-        val pi =
-                PendingIntent.getActivity(context, 0, ii, PendingIntent.FLAG_UPDATE_CURRENT)
-        val notification: Notification
+        //You should use an actual ID instead
+        val notificationId = Random().nextInt(60000)
+        val bitmap =
+            getBitmapfromUrl(remoteMessage.data["https://feedy.ly/public/dist/website/images/logo3.png"])
+        val likeIntent = Intent(this, LikeService::class.java)
+        likeIntent.putExtra(NOTIFICATION_ID_EXTRA, notificationId)
+        likeIntent.putExtra(
+            IMAGE_URL_EXTRA,
+            remoteMessage.data["https://feedy.ly/public/dist/website/images/logo3.png"]
+        )
+        val likePendingIntent = PendingIntent.getService(
+            this,
+            notificationId + 1, likeIntent, PendingIntent.FLAG_ONE_SHOT
+        )
+        val defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+        notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            //Log.e("Notification", "Created in up to orio OS device");
-            notification = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID)
-                    .setOngoing(true)
-                    .setSmallIcon(getNotificationIcon())
-                    .setContentText(message)
-                    .setAutoCancel(true)
-                    .setContentIntent(pi)
-                    .setPriority(NotificationCompat.PRIORITY_HIGH)
-                    .setCategory(Notification.CATEGORY_SERVICE)
-                    .setWhen(System.currentTimeMillis())
-                    .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
-                    .setContentTitle(title).build()
-            val notificationManager = context.getSystemService(
-                    Context.NOTIFICATION_SERVICE
-            ) as NotificationManager
-            val notificationChannel = NotificationChannel(
-                    NOTIFICATION_CHANNEL_ID,
-                    title,
-                    NotificationManager.IMPORTANCE_DEFAULT
+            setupChannels()
+        }
+        val notificationBuilder = NotificationCompat.Builder(this, ADMIN_CHANNEL_ID)
+            .setLargeIcon(bitmap)
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setContentTitle(remoteMessage.data["title"])
+            .setStyle(
+                NotificationCompat.BigPictureStyle()
+                    .setSummaryText(remoteMessage.data["message"])
+                    .bigPicture(bitmap)
+            )/*Notification with Image*/
+            .setContentText(remoteMessage.data["message"])
+            .setAutoCancel(true)
+            .setSound(defaultSoundUri)
+            .addAction(
+                R.drawable.feedy,
+                getString(R.string.notification_add_to_cart_button), likePendingIntent
             )
-            notificationManager.createNotificationChannel(notificationChannel)
-            notificationManager.notify(NOTIFICATION_ID, notification)
-        } else {
-            notification = NotificationCompat.Builder(context)
-                    .setSmallIcon(getNotificationIcon())
-                    .setAutoCancel(true)
-                    .setContentText(message)
-                    .setContentIntent(pi)
-                    .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
-                    .setContentTitle(title).build()
-            val notificationManager = context.getSystemService(
-                    Context.NOTIFICATION_SERVICE
-            ) as NotificationManager
-            notificationManager.notify(NOTIFICATION_ID, notification)
+            .setContentIntent(pendingIntent)
+
+        notificationManager?.notify(notificationId, notificationBuilder.build())
+    }
+
+    fun getBitmapfromUrl(imageUrl: String?): Bitmap? {
+        return try {
+            val url = URL(imageUrl)
+            val connection = url.openConnection() as HttpURLConnection
+            connection.doInput = true
+            connection.connect()
+            val input = connection.inputStream
+            BitmapFactory.decodeStream(input)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
         }
     }
 
-    private fun getNotificationIcon(): Int {
-        val useWhiteIcon =
-                Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
-        return if (useWhiteIcon) R.mipmap.ic_launcher else R.mipmap.ic_launcher
+    @RequiresApi(Build.VERSION_CODES.O)
+
+    private fun setupChannels() {
+        val adminChannelName: CharSequence = getString(R.string.notifications_admin_channel_name)
+        val adminChannelDescription = getString(R.string.notifications_admin_channel_description)
+        val adminChannel: NotificationChannel
+        adminChannel = NotificationChannel(
+            ADMIN_CHANNEL_ID,
+            adminChannelName,
+            NotificationManager.IMPORTANCE_LOW
+        )
+        adminChannel.description = adminChannelDescription
+        adminChannel.enableLights(true)
+        adminChannel.lightColor = Color.RED
+        adminChannel.enableVibration(true)
+        if (notificationManager != null) {
+            notificationManager!!.createNotificationChannel(adminChannel)
+        }
     }
 
+    companion object {
+        private const val NOTIFICATION_ID_EXTRA = "notificationId"
+        private const val IMAGE_URL_EXTRA = "https://feedy.ly/public/dist/website/images/logo3.png"
+        private const val ADMIN_CHANNEL_ID = "admin_channel"
+    }
 }
